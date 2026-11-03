@@ -3,54 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Đăng Bài Facebook</title>
+    <title>Hệ Thống Auto Đăng Bài FB</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h1 { color: #1877f2; text-align: center; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #1877f2; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        button:hover { background-color: #166fe5; }
-        #status { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; display: none; }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
+        :root { --primary: #0866FF; --bg: #f4f6f9; --text: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background: var(--bg); color: var(--text); height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: #1c2536; color: white; padding: 20px 0; display: flex; flex-direction: column; }
+        .sidebar h2 { text-align: center; font-size: 20px; border-bottom: 1px solid #2f3b52; padding-bottom: 20px; margin-top: 0; }
+        .nav-btn { background: none; border: none; color: #9da4b0; padding: 15px 25px; text-align: left; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .nav-btn:hover, .nav-btn.active { background: #2f3b52; color: white; border-left: 4px solid var(--primary); }
+        
+        /* Content */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Card & Forms */
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button.btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button.btn:hover { background: #075ce5; }
+        button.btn-danger { background: #dc3545; padding: 5px 10px; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; }
+        .status-success { color: #155724; background: #d4edda; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+        .status-pending { color: #856404; background: #fff3cd; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🚀 Tool Đăng Bài Group FB</h1>
-    <label>🏷️ ID Nhóm (Group ID):</label>
-    <input type="text" id="groupId" placeholder="Ví dụ: 123456789">
-    <label>📝 Nội dung bài đăng:</label>
-    <textarea id="content" rows="6" placeholder="Phòng trọ giá rẻ..."></textarea>
-    <button onclick="postToFacebook()">ĐĂNG BÀI BẰNG TRÌNH DUYỆT</button>
-    <div id="status"></div>
-</div>
-<script>
-    function postToFacebook() {
-        const groupId = document.getElementById('groupId').value.trim();
-        const content = document.getElementById('content').value.trim();
-        const statusEl = document.getElementById('status');
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🔥 SP TOOL POST</h2>
+        <button class="nav-btn active" onclick="switchTab('tab-run')">▶️ Bảng Điều Khiển</button>
+        <button class="nav-btn" onclick="switchTab('tab-accounts')">👥 Tài khoản Social</button>
+        <button class="nav-btn" onclick="switchTab('tab-posts')">📝 Quản lý Bài Đăng</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
         
-        if(!groupId || !content) {
-            statusEl.className = 'error';
-            statusEl.textContent = '❌ Vui lòng nhập ID Nhóm và Nội dung!';
-            statusEl.style.display = 'block';
-            return;
+        <!-- 1. TAB BẢNG ĐIỀU KHIỂN & THEO DÕI TOOL -->
+        <div id="tab-run" class="tab-content active">
+            <div class="card">
+                <h3>Cấu Hình Chạy Tool</h3>
+                <div class="form-group">
+                    <label>Chọn tài khoản đi đăng:</label>
+                    <select id="select-account"><option>-- Chưa có tài khoản --</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Chọn bài viết:</label>
+                    <select id="select-post"><option>-- Chưa có bài viết --</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Nhập ID các nhóm (Cách nhau bằng dấu phẩy):</label>
+                    <input type="text" id="target-groups" placeholder="VD: 123456, 987654, 112233">
+                </div>
+                <button class="btn" onclick="runSystem()">🚀 CHẠY TIẾN TRÌNH</button>
+            </div>
+
+            <div class="card">
+                <h3>Theo Dõi Hoạt Động (Logs)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Tài khoản</th>
+                            <th>ID Nhóm</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table">
+                        <!-- Logs hiện ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. TAB TÀI KHOẢN -->
+        <div id="tab-accounts" class="tab-content">
+            <div class="card">
+                <h3>Thêm Tài Khoản Mới</h3>
+                <input type="text" id="acc-name" placeholder="Tên nick (VD: Nick Clone 1)" class="form-group">
+                <input type="text" id="acc-cookie" placeholder="Cookie hoặc Ghi chú tài khoản" class="form-group">
+                <button class="btn" onclick="addAccount()">Lưu Tài Khoản</button>
+            </div>
+            <div class="card">
+                <h3>Danh sách Tài Khoản</h3>
+                <table>
+                    <thead><tr><th>Tên Nick</th><th>Thông tin</th><th>Hành động</th></tr></thead>
+                    <tbody id="account-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. TAB BÀI ĐĂNG -->
+        <div id="tab-posts" class="tab-content">
+            <div class="card">
+                <h3>Soạn Bài Đăng Mới</h3>
+                <input type="text" id="post-title" placeholder="Tên gợi nhớ (VD: Bài đăng phòng Cầu Giấy)" class="form-group">
+                <textarea id="post-content" rows="4" placeholder="Nội dung chi tiết..." class="form-group"></textarea>
+                <button class="btn" onclick="addPost()">Lưu Bài Đăng</button>
+            </div>
+            <div class="card">
+                <h3>Danh sách Bài Đăng</h3>
+                <table>
+                    <thead><tr><th>Tên Bài</th><th>Nội dung</th><th>Hành động</th></tr></thead>
+                    <tbody id="post-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Cơ sở dữ liệu tạm thời lưu trên trình duyệt (LocalStorage)
+        let accounts = JSON.parse(localStorage.getItem('fb_accounts')) || [];
+        let posts = JSON.parse(localStorage.getItem('fb_posts')) || [];
+
+        // Chuyển Tab
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
         }
-        const fbUrl = `https://www.facebook.com/groups/${groupId}/`;
-        navigator.clipboard.writeText(content).then(() => {
-            statusEl.className = 'success';
-            statusEl.textContent = '✅ Đã copy nội dung. Đang mở Facebook Group... Hãy dán (Ctrl+V) vào ô đăng bài!';
-            statusEl.style.display = 'block';
-            setTimeout(() => { window.open(fbUrl, '_blank'); }, 1500);
-        }).catch(err => {
-            statusEl.className = 'error';
-            statusEl.textContent = '❌ Lỗi: Không thể copy. ' + err;
-            statusEl.style.display = 'block';
-        });
-    }
-</script>
+
+        // Quản lý Tài Khoản
+        function addAccount() {
+            let name = document.getElementById('acc-name').value;
+            let cookie = document.getElementById('acc-cookie').value;
+            if(!name) return alert('Nhập tên tài khoản!');
+            accounts.push({ id: Date.now(), name, cookie });
+            localStorage.setItem('fb_accounts', JSON.stringify(accounts));
+            renderData();
+        }
+        function delAccount(id) {
+            accounts = accounts.filter(a => a.id !== id);
+            localStorage.setItem('fb_accounts', JSON.stringify(accounts));
+            renderData();
+        }
+
+        // Quản lý Bài Đăng
+        function addPost() {
+            let title = document.getElementById('post-title').value;
+            let content = document.getElementById('post-content').value;
+            if(!title || !content) return alert('Nhập đầy đủ tiêu đề và nội dung!');
+            posts.push({ id: Date.now(), title, content });
+            localStorage.setItem('fb_posts', JSON.stringify(posts));
+            renderData();
+        }
+        function delPost(id) {
+            posts = posts.filter(p => p.id !== id);
+            localStorage.setItem('fb_posts', JSON.stringify(posts));
+            renderData();
+        }
+
+        // Hiển thị dữ liệu ra bảng & Dropdown
+        function renderData() {
+            // Bảng Tài khoản
+            document.getElementById('account-table').innerHTML = accounts.map(a => 
+                `<tr><td>${a.name}</td><td>${a.cookie.substring(0,20)}...</td>
+                <td><button class="btn btn-danger" onclick="delAccount(${a.id})">Xóa</button></td></tr>`
+            ).join('');
+            
+            // Dropdown Tài khoản
+            let accSelect = document.getElementById('select-account');
+            accSelect.innerHTML = accounts.length ? accounts.map(a => `<option value="${a.name}">${a.name}</option>`).join('') : '<option>-- Trống --</option>';
+
+            // Bảng Bài đăng
+            document.getElementById('post-table').innerHTML = posts.map(p => 
+                `<tr><td>${p.title}</td><td>${p.content.substring(0,30)}...</td>
+                <td><button class="btn btn-danger" onclick="delPost(${p.id})">Xóa</button></td></tr>`
+            ).join('');
+
+            // Dropdown Bài đăng
+            let postSelect = document.getElementById('select-post');
+            postSelect.innerHTML = posts.length ? posts.map(p => `<option value="${p.content}">${p.title}</option>`).join('') : '<option>-- Trống --</option>';
+        }
+
+        // Chạy hệ thống & Theo dõi Log
+        function runSystem() {
+            let accName = document.getElementById('select-account').value;
+            let postContent = document.getElementById('select-post').value;
+            let rawGroups = document.getElementById('target-groups').value;
+            
+            if(!accName || !postContent || !rawGroups) return alert('Vui lòng chọn tài khoản, bài viết và nhập ID nhóm!');
+            
+            let groups = rawGroups.split(',').map(g => g.trim()).filter(g => g !== "");
+            let logTable = document.getElementById('log-table');
+            
+            // Ghi Log bắt đầu
+            groups.forEach((groupId, index) => {
+                let time = new Date().toLocaleTimeString();
+                
+                // Trì hoãn mở tab để tránh bị block popup
+                setTimeout(() => {
+                    // Copy nội dung vào bộ nhớ tạm
+                    navigator.clipboard.writeText(postContent).then(() => {
+                        // Ghi log thành công
+                        logTable.innerHTML = `<tr>
+                            <td>${time}</td><td>${accName}</td><td>${groupId}</td>
+                            <td><span class="status-success">Đã mở tab FB - Chờ dán (Ctrl+V)</span></td>
+                        </tr>` + logTable.innerHTML;
+                        
+                        window.open(`https://www.facebook.com/groups/${groupId}/`, '_blank');
+                    }).catch(() => {
+                        // Ghi log lỗi
+                        logTable.innerHTML = `<tr>
+                            <td>${time}</td><td>${accName}</td><td>${groupId}</td>
+                            <td><span class="status-pending">Lỗi Copy - Hãy thử lại</span></td>
+                        </tr>` + logTable.innerHTML;
+                    });
+                }, index * 2000); // Mỗi nhóm cách nhau 2 giây
+            });
+        }
+
+        // Khởi tạo giao diện lần đầu
+        renderData();
+    </script>
 </body>
 </html>

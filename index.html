@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Đăng Bài Facebook</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { color: #1877f2; text-align: center; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #1877f2; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #166fe5; }
+        #status { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; display: none; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🚀 Tool Đăng Bài Group FB</h1>
+    <label>🏷️ ID Nhóm (Group ID):</label>
+    <input type="text" id="groupId" placeholder="Ví dụ: 123456789">
+    <label>📝 Nội dung bài đăng:</label>
+    <textarea id="content" rows="6" placeholder="Phòng trọ giá rẻ..."></textarea>
+    <button onclick="postToFacebook()">ĐĂNG BÀI BẰNG TRÌNH DUYỆT</button>
+    <div id="status"></div>
+</div>
+<script>
+    function postToFacebook() {
+        const groupId = document.getElementById('groupId').value.trim();
+        const content = document.getElementById('content').value.trim();
+        const statusEl = document.getElementById('status');
+        
+        if(!groupId || !content) {
+            statusEl.className = 'error';
+            statusEl.textContent = '❌ Vui lòng nhập ID Nhóm và Nội dung!';
+            statusEl.style.display = 'block';
+            return;
+        }
+        const fbUrl = `https://www.facebook.com/groups/${groupId}/`;
+        navigator.clipboard.writeText(content).then(() => {
+            statusEl.className = 'success';
+            statusEl.textContent = '✅ Đã copy nội dung. Đang mở Facebook Group... Hãy dán (Ctrl+V) vào ô đăng bài!';
+            statusEl.style.display = 'block';
+            setTimeout(() => { window.open(fbUrl, '_blank'); }, 1500);
+        }).catch(err => {
+            statusEl.className = 'error';
+            statusEl.textContent = '❌ Lỗi: Không thể copy. ' + err;
+            statusEl.style.display = 'block';
+        });
+    }
+</script>
+</body>
+</html>
